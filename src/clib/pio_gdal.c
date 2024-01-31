@@ -707,6 +707,7 @@ pio_read_darray_shp(file_desc_t *file, io_desc_t *iodesc, int vid,
 
                     /* Read the data. */
                     /* ierr = nc_get_vara(file->fh, vid, start, count, bufptr); */
+		    printf("type %d %d\n",iodesc->piotype, PIO_DOUBLE);
                     switch (iodesc->piotype)
                     {
                     case PIO_BYTE:

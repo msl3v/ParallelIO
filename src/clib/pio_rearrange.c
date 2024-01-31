@@ -1264,6 +1264,8 @@ box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *compmap
     /* Number of elements of data on compute node. */
     iodesc->ndof = maplen;
 
+    printf("XX iodesc->ndof = %d\n", maplen);
+
     if (maplen > 0)
     {
         if (!(dest_ioproc = malloc(maplen * sizeof(int))))

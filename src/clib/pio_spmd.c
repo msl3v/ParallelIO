@@ -130,6 +130,10 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
             PLOG((3, "Called MPI_Alltoallw without flow control. mpierr %d",mpierr));
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         }
+	for (int p = 0; p < 4; p++) {
+//	  printf("sendbuf[%d] %f\n",p,((double*) sendbuf)[p]);
+//	  printf("recvbuf[%d] %f\n",p,((double*) recvbuf)[p]);
+	}
         return PIO_NOERR;
     }
 
