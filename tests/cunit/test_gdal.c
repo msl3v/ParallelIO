@@ -114,6 +114,7 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
     double fillvalue_double = NC_FILL_DOUBLE;
     double test_data_double[arraylen];
     int iotype = PIO_IOTYPE_GDAL;
+    float expected_data[2] = {366.,677.};
 
     GDALDatasetH hDSp;
 
@@ -152,19 +153,18 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
 	if ((ret = PIOc_closefile(shpid)))
 	  ERR(ret);
 
-	int n = arraylen; // number of elements
 	switch(pio_type) {
 	case PIO_INT:
-	  for (int i=0; i<n; i++) printf("int %d", ((int *)test_data)[i]);
+	  printf("int %d", ((int *)test_data));
 	  break;
 	case PIO_FLOAT:
-	  for (int i=0; i<n; i++) printf("float %f", ((float *)test_data)[i]);
+	  printf("float %f", ((float *)test_data));
 	  break;
 	case PIO_DOUBLE:
-	  for (int i=0; i<n; i++) printf("PE %d: double %lf", my_rank, ((double *)test_data)[i]);
+	  printf("PE %d: double %lf\n", my_rank, ((double *)test_data)[0]);
+	  if (((double*)test_data)[0] != (double)expected_data[my_rank]) return ERR_WRONG;
 	  break;
 	}
-	printf("\n");
 
       } /* next test multi */
 
@@ -203,7 +203,7 @@ int test_all_gdal(int iosysid, int num_flavors, int *flavor, int my_rank,
         /* Run a simple darray test. */
         if ((ret = test_gdal(iosysid, ioid, num_flavors, flavor, my_rank, pio_type[t])))
 	  return ret;
-
+	
         /* Free the PIO decomposition. */
         if ((ret = PIOc_freedecomp(iosysid, ioid)))
 	  ERR(ret);
@@ -215,8 +215,8 @@ int test_all_gdal(int iosysid, int num_flavors, int *flavor, int my_rank,
 /* Run tests for darray functions. */
 int main(int argc, char **argv)
 {
-#define NUM_REARRANGERS_TO_TEST 1
-    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX};//, PIO_REARR_BOX};
+#define NUM_REARRANGERS_TO_TEST 2
+    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_SUBSET, PIO_REARR_BOX};
     int my_rank;
     int ntasks;
     int num_flavors; /* Number of PIO netCDF flavors in this build. Not used*/
@@ -256,8 +256,9 @@ int main(int argc, char **argv)
 
             /* Run tests. */
 	    printf("Testing rearranger = %d\n", rearranger[r]);
-            if ((ret = test_all_gdal(iosysid, num_flavors, flavor, my_rank, test_comm)))
-                return ret;
+            if ((ret = test_all_gdal(iosysid, num_flavors, flavor, my_rank, test_comm))) {
+	      fprintf(stderr, "Exiting with error code: %d\n", ret);
+	      return ret; }
 
             /* Finalize PIO system. */
             if ((ret = PIOc_free_iosystem(iosysid)))
